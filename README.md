@@ -1,3 +1,5 @@
+> **Omakase fork.** This is a modified version of [litagin02/Style-Bert-VITS2](https://github.com/litagin02/Style-Bert-VITS2), licensed under AGPL-3.0. For what changed and when, see [MODIFICATIONS.md](MODIFICATIONS.md).
+
 # Style-Bert-VITS2
 
 **利用の際は必ず[お願いとデフォルトモデルの利用規約](/docs/TERMS_OF_USE.md)をお読みください。**

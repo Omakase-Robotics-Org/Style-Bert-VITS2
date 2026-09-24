@@ -45,12 +45,16 @@ config = get_config()
 ln = config.server_config.language
 
 
-# pyopenjtalk_worker を起動
-## pyopenjtalk_worker は TCP ソケットサーバーのため、ここで起動する
-pyopenjtalk.initialize_worker()
+# Omakase: SBV2_SKIP_JP=1 skips the JP pyopenjtalk worker for EN-only serving
+# (JA served elsewhere), so startup never blocks on the worker's timeout or a
+# missing dict on boxes where pyopenjtalk is broken. Unset = upstream behavior.
+if os.environ.get("SBV2_SKIP_JP") != "1":
+    # pyopenjtalk_worker を起動
+    ## pyopenjtalk_worker は TCP ソケットサーバーのため、ここで起動する
+    pyopenjtalk.initialize_worker()
 
-# dict_data/ 以下の辞書データを pyopenjtalk に適用
-update_dict()
+    # dict_data/ 以下の辞書データを pyopenjtalk に適用
+    update_dict()
 
 
 def raise_validation_error(msg: str, param: str):
