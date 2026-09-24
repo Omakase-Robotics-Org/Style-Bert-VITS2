@@ -113,6 +113,14 @@ def load_model(
         f"Loaded the {language.name} BERT model from {pretrained_model_name_or_path} ({time.time() - start_time:.2f}s)"
     )
 
+    # Blackwell/torch>=2.7: from_pretrained can materialize BERT weights in fp16,
+    # whose embeddings then hit the fp32 SynthesizerTrn conv (c10::Half vs float
+    # RuntimeError). Force fp32 to match the fp32 TTS net. (No-op on torch 2.6.)
+    try:
+        __loaded_models[language] = __loaded_models[language].float()
+    except Exception:
+        pass
+
     return __loaded_models[language]
 
 
