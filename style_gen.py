@@ -16,7 +16,20 @@ from style_bert_vits2.utils.stdout_wrapper import SAFE_STDOUT
 
 config = get_config()
 
-model = Model.from_pretrained("pyannote/wespeaker-voxceleb-resnet34-LM")
+# pyannote.audio 3.4.0 passes use_auth_token to a newer huggingface_hub that
+# removed it; download the checkpoint ourselves and load from the local path.
+from huggingface_hub import hf_hub_download
+
+# torch>=2.6 defaults torch.load(weights_only=True); this Lightning checkpoint
+# additionally pickles TorchVersion, so allowlist it via the official
+# torch.serialization API (weights_only protection itself stays on).
+_ckpt = hf_hub_download("pyannote/wespeaker-voxceleb-resnet34-LM", "pytorch_model.bin")
+from pyannote.audio.core.task import Problem, Resolution, Specifications
+
+with torch.serialization.safe_globals(
+    [torch.torch_version.TorchVersion, Specifications, Problem, Resolution]
+):
+    model = Model.from_pretrained(_ckpt)
 inference = Inference(model, window="whole")
 device = torch.device(config.style_gen_config.device)
 inference.to(device)
