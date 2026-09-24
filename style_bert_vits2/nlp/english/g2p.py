@@ -84,6 +84,17 @@ ARPA = {
 }
 _g2p = G2p()
 eng_dict = get_dict()
+# Project lexicon (acronyms / Japanese proper nouns) overriding CMUdict; same
+# "WORD  syl - syl" format as cmudict.rep. Applied at both preprocessing and inference.
+try:
+    from pathlib import Path as _Path
+
+    for _line in (_Path(__file__).parent / "user_dict.rep").read_text(encoding="utf-8").splitlines():
+        if _line.strip() and not _line.startswith("#"):
+            _w, _p = _line.strip().split("  ", 1)
+            eng_dict[_w] = [_s.split(" ") for _s in _p.split(" - ")]
+except FileNotFoundError:
+    pass
 
 
 def g2p(text: str) -> tuple[list[str], list[int], list[int]]:
@@ -96,6 +107,13 @@ def g2p(text: str) -> tuple[list[str], list[int], list[int]]:
         temp_phones, temp_tones = [], []
         if len(word) > 1 and "'" in word:
             word = ["".join(word)]
+        elif len(word) > 1:
+            # A word split into several subword tokens: phonemize it as one word
+            # (dict lookup / G2p on the whole word) instead of piece by piece,
+            # keeping any trailing punctuation separate.
+            core = [w for w in word if w not in PUNCTUATIONS]
+            if core and all(w in PUNCTUATIONS for w in word[len(core) :]):
+                word = ["".join(core)] + word[len(core) :]
 
         for w in word:
             if w in PUNCTUATIONS:

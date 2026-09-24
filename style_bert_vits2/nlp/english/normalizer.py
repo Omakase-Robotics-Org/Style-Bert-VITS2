@@ -13,6 +13,7 @@ __NUMBER_PATTERN = re.compile(r"[0-9]+")
 
 
 def normalize_text(text: str) -> str:
+    text = re.sub(r"([0-9])\s*%", r"\1 percent", text)
     text = __normalize_numbers(text)
     text = replace_punctuation(text)
     text = re.sub(r"([,;.\?\!])([\w])", r"\1 \2", text)
